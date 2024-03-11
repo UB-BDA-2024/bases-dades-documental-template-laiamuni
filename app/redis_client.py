@@ -1,3 +1,4 @@
+import json
 import redis
 
 class RedisClient:
@@ -13,11 +14,13 @@ class RedisClient:
     def ping(self):
         return self._client.ping()
     
-    def get(self, key):
-        return self._client.get(key)
-    
     def set(self, key, value):
-        return self._client.set(key, value)
+        value2 = json.dumps(value)
+        return self._client.set(key, value2)
+
+    def get(self, key):
+        data = self._client.get(key)
+        return json.loads(data)
     
     def delete(self, key):
         return self._client.delete(key)
@@ -28,4 +31,7 @@ class RedisClient:
     def clearAll(self):
         for key in self._client.keys("*"):
             self._client.delete(key)
+
+    def delete(self, key):
+        return self._client.delete(key)
     
