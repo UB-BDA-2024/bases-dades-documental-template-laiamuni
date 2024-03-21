@@ -1,13 +1,12 @@
-from pymongo import MongoClient, GEOSPHERE
+from pymongo import MongoClient
 
 class MongoDBClient:
     def __init__(self, host="localhost", port=27017):
         self.host = host
         self.port = port
         self.client = MongoClient(host, port)
-        self.database = self.client["mydatabase"]
-        self.collection = self.database["Sensors"]
-        self.collection.create_index([("location", GEOSPHERE)])  
+        self.database = self.client["MongoDB_"]
+        self.collection = self.database["sensors"]
 
     def close(self):
         self.client.close()
@@ -33,7 +32,7 @@ class MongoDBClient:
         return self.collection.delete_one(query)
     
     def getDocuments(self, query):
-        return list(self.collection.find(query, {'id':0}))
+        return self.collection.find(query, {'_id': 0})
 
 
 

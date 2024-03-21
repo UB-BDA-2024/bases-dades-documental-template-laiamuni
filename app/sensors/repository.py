@@ -76,20 +76,19 @@ def delete_sensor(db: Session, sensor_id: int, mongodb: MongoDBClient, redis: Re
     redis.delete(sensor_id)
     return db_sensor
 
-def get_sensor_near(mongodb: MongoDBClient, redis: RedisClient, latitude: float, longitude: float, radius: float):
-    query = {"location": ([("$near", [latitude, longitude]), ("$maxDistance", radius)])}
+def get_sensor_near(mongodb: MongoDBClient, redis: RedisClient, latitude: float, longitude: float, radius: float, db:Session)->List:
+    query = {"latitude":{"$gte":latitude - radius,"$lte":latitude + radius}, "longitude":{"$gte": longitude-radius, "$lte":longitude+radius}}
+    documents = list(mongodb.getDocuments(query))
 
-    documents = mongodb.getDocuments(query)
+    for i in documents:
+        db_sensor = get_sensor(db=db, sensor_id=i['id'])
 
-    if documents:
-        for i in documents:
-            db_sensor = redis.get(i["id"])
-            i.update({
-                "velocity": db_sensor["velocity"],
-                "temperature": db_sensor["temperature"],
-                "humidity": db_sensor["humidity"],
-                "battery_level": db_sensor["battery_level"],
-                "last_seen": db_sensor["last_seen"]
-            })
+        db_sensor=get_data(redis=redis,sensor_id=db_sensor.id,data=db)
+
+        i['velocity']=db_sensor['velocity']
+        i['temperature']=db_sensor['temperature']
+        i['humidity']=db_sensor['humidity']
+        i['battery_level']=db_sensor['battery_level']
+        i['last_seen']=db_sensor['last_seen']
     
-        return documents
+    return documents

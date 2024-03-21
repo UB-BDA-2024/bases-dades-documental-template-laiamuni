@@ -41,8 +41,8 @@ router = APIRouter(
 
 # 🙋🏽‍♀️ Add here the route to get a list of sensors near to a given location
 @router.get("/near")
-def get_sensors_near(latitude: float, longitude: float, radius:float, mongodb_client: MongoDBClient = Depends(get_mongodb_client), redis_client: RedisClient = Depends(get_redis_client)):
-    return repository.get_sensor_near(mongodb= mongodb_client, redis=redis_client, latitude=latitude, longitude=longitude, radius=radius)
+def get_sensors_near(latitude: float, longitude: float, radius:float, mongodb_client: MongoDBClient = Depends(get_mongodb_client), redis_client: RedisClient = Depends(get_redis_client), db: Session = Depends(get_db)):
+    return repository.get_sensor_near(mongodb= mongodb_client, redis=redis_client, latitude=latitude, longitude=longitude, radius=radius, db=db)
 
 
 # 🙋🏽‍♀️ Add here the route to get all sensors
@@ -79,7 +79,7 @@ def delete_sensor(sensor_id: int, db: Session = Depends(get_db), mongodb_client:
 
 # 🙋🏽‍♀️ Add here the route to update a sensor
 @router.post("/{sensor_id}/data")
-def record_data(sensor_id: int, data: schemas.SensorData,db: Session = Depends(get_db) ,redis_client: Session = Depends(get_redis_client), mongodb_client: Session = Depends(get_mongodb_client)):
+def record_data(sensor_id: int, data: schemas.SensorData,db: Session = Depends(get_db) ,redis_client: Session = Depends(get_redis_client)):
     db_sensor = repository.get_sensor(db, sensor_id)
     
     if db_sensor is None:
